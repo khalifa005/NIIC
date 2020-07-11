@@ -3,13 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30225.117
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{7A4C8929-163C-45BA-981B-4D28B64DF49E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application", "Application\Application.csproj", "{7A4C8929-163C-45BA-981B-4D28B64DF49E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Persistence", "Persistence\Persistence.csproj", "{895FBF60-6727-4C82-9107-8090B34159BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Persistence", "Persistence\Persistence.csproj", "{895FBF60-6727-4C82-9107-8090B34159BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domains", "Domains\Domains.csproj", "{274085A6-81F2-43D9-AE11-B0815CCA7ECB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domains", "Domains\Domains.csproj", "{274085A6-81F2-43D9-AE11-B0815CCA7ECB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NIIC.API", "NIIC.API\NIIC.API.csproj", "{BC2E8496-66CC-4D8E-858D-15221C4CCB59}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NIIC.API", "NIIC.API\NIIC.API.csproj", "{BC2E8496-66CC-4D8E-858D-15221C4CCB59}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web.NIIC.Blazor", "Web.NIIC.Blazor", "{A2947340-9A81-4200-BC98-98F34186792A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

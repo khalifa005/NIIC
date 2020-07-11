@@ -24,8 +24,9 @@ UpgradeLog.XML
 *.vssscc
 *.scc
 *.sqlsuo
-
-/Infrastructure/Migrations
+/Persistence/Migrations
+/NIIC/Persistence/Migrations
+/Persistence/Migrations
 /Infrastructure/Data/Migrations
 Migration
 /Migration
