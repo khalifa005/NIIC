@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Persistence;
 
 namespace NIIC.API
 {
@@ -19,23 +20,22 @@ namespace NIIC.API
             using (var scope = host.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
+                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
                 try
                 {
-                    var context = services.GetRequiredService<DbContext>();
-                    context.Database.Migrate();
+                    var context = services.GetRequiredService<DataContext>();
+                     context.Database.Migrate();
+                     ContextSeed.SeedAsync(context, loggerFactory);
                 }
                 catch (Exception ex)
                 {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex,"error occured during migration");
+                    var logger = loggerFactory.CreateLogger<Program>();
+                    logger.LogError(ex, "An error occured during migration");
                 }
-
             }
 
             host.Run();
-            
         }
-
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
