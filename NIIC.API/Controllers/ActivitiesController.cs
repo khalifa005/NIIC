@@ -43,7 +43,7 @@ namespace NIIC.API.Controllers
 
         // POST api/<ActivitiesController>
         [HttpPost]
-        public async Task<SaveActivity.Response> Post(SaveActivity.Request activity)
+        public async Task<CreateActivity.Response> Post(CreateActivity.Request activity)
         {
             return await _mediator.Send(activity);
         }
@@ -56,14 +56,17 @@ namespace NIIC.API.Controllers
 
         // PUT api/<ActivitiesController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<EditActivity.Response> Put(Guid id, EditActivity.Request activity)
         {
+            activity.Id = id;
+            return await _mediator.Send(activity);
         }
 
         // DELETE api/<ActivitiesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<DeleteActivity.Response> Delete(Guid id)
         {
+            return await _mediator.Send(new DeleteActivity.Request {Id = id});
         }
     }
 }
