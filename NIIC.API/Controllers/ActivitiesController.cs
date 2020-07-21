@@ -10,7 +10,7 @@ namespace NIIC.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]  
-    public class ActivitiesController //: ControllerBase //return ok status //Controller return or generate view
+    public class ActivitiesController : ControllerBase 
     {
         private readonly IMediator _mediator;
 
@@ -49,7 +49,7 @@ namespace NIIC.API.Controllers
         [HttpDelete("{id}")]
         public async Task<DeleteActivity.Response> Delete(Guid id)
         {
-            return await _mediator.Send(new DeleteActivity.Request {Id = id});
+            return await _mediator.Send(new DeleteActivity.Request { Id = id });
         }
     }
 }
