@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Domains;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NIIC.API.MailKit;
 using Persistence;
 
 namespace NIIC.API.Controllers
@@ -14,15 +15,18 @@ namespace NIIC.API.Controllers
     public class ValuesController : ControllerBase
     {
         private readonly DataContext _context;
+        private readonly IMailer _mailer;
 
-        public ValuesController(DataContext context)
+        public ValuesController(DataContext context, IMailer mailer)
         {
             _context = context;
+            _mailer = mailer;
         }
         // GET: api/<ValuesController>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Value>>> Get()
         {
+            //await _mailer.SendEmailAsync("mahmoudkh@silverkeytech.com", "Weather Report", "Detailed Weather Report");
             return Ok(await _context.Values.ToListAsync());
         }
 
