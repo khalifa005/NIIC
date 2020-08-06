@@ -258,9 +258,11 @@ namespace Application.Activities
             public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
             {
                 var currentActivity = await _context.Activities.FindAsync(request.Id);
+                
                 //return not found null obj and right status code in the api response obj
                 if (currentActivity == null)
                     throw new RestException(HttpStatusCode.NotFound, new {currentActivity = "Not Found"});
+                
                 currentActivity.Title = request.Title ?? currentActivity.Title;
                 currentActivity.Description = request.Description ?? currentActivity.Description;
                 currentActivity.Category = request.Category ?? currentActivity.Category;
@@ -340,24 +342,4 @@ namespace Application.Activities
         }
     }
 
-    //[CreateSingleton]
-    //public class ActivitiesCache : CacheObject
-    //{
-    //    public override string Key(string activityCateg = "") => $"Activity.{activityCateg}";
-
-    //    public ActivitiesCache(IDistributedCache cache) : base(cache)
-    //    {
-    //    }
-
-    //    public Task<List<Activity>> GetActivitiesAsync(short activityCateg, CancellationToken cancellationToken)
-    //    {
-    //        return GetAsync((Key(activityCateg.ToString()), AbsoluteOneDay), () =>
-    //            SK.Data.ORM.Query.GetAsync(meta => meta.Neighbourhood.Where(x => x.CityId == activityCateg).ProjectToNeighbourhoodView().ToListAsync(cancellationToken)));
-    //    }
-    //}
-    //[AttributeUsage(AttributeTargets.Class)]
-    //public class CreateSingletonAttribute : Attribute
-    //{
-    //    public bool IsImplementingInterface { get; set; } = false;
-    //}
 }
