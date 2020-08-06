@@ -5,17 +5,43 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Domains;
+using Domains.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Persistence
 {
     public class ContextSeed
     {
-        public static void SeedAsync(DataContext context, ILoggerFactory loggerFactory)
+        public static async Task SeedAsync(DataContext context, ILoggerFactory loggerFactory, UserManager<AppUser> userManager)
         {
 
             try
             {
+                if (!userManager.Users.Any())
+                {
+                    var users = new List<AppUser>
+                    {
+                        new AppUser()
+                        {
+                            DisplayName = "Kholfa",
+                            UserName = "khalifa",
+                            Email = "khalifa@test.com"
+                        },
+                        new AppUser()
+                        {
+                            DisplayName = "Osos",
+                            UserName = "osama",
+                            Email = "osos@test.com"
+                        },
+                    };
+                    
+
+                    foreach (var user in users)
+                    {
+                        await userManager.CreateAsync(user, "Pa$$w0rd");
+                    }
+                }
                 if (!context.Activities.Any())
                 {
                     var activities = new List<Activity>
