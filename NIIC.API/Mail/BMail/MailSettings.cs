@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace NIIC.API.BMail
+﻿namespace NIIC.API.Mail.BMail
 {
     public class MailSettings
     {

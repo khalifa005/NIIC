@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
 using Domains.BMail;
 using Microsoft.Extensions.Options;
 
-namespace NIIC.API.BMail.MailServices
+namespace NIIC.API.Mail.BMail.MailServices
 {
     public class MailService : IMailService
     {

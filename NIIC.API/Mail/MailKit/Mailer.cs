@@ -1,17 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using MailKit.Net.Smtp;
-using MailKit.Security;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 
-namespace NIIC.API.MailKit
+namespace NIIC.API.Mail.MailKit
 {
     public class Mailer : IMailer
     {

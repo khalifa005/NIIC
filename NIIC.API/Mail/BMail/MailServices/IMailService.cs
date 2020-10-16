@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Domains.BMail;
 
-namespace NIIC.API.BMail.MailServices
+namespace NIIC.API.Mail.BMail.MailServices
 {
     public interface IMailService
     {

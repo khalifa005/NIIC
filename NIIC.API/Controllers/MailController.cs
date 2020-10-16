@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Domains.BMail;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NIIC.API.BMail.MailServices;
+using NIIC.API.Mail.BMail.MailServices;
 
 namespace NIIC.API.Controllers
 {
