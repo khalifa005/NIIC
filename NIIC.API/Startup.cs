@@ -2,12 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Application;
 using Application.Activities;
+using Application.Interfaces;
 using Domains.Identity;
 using FluentValidation.AspNetCore;
+using Infrastructure.Security;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -17,11 +22,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using NIIC.API.BMail;
-using NIIC.API.BMail.MailServices;
-using NIIC.API.MailKit;
+using Microsoft.IdentityModel.Tokens;
+using NIIC.API.Mail.BMail;
+using NIIC.API.Mail.BMail.MailServices;
+using NIIC.API.Mail.MailKit;
 using NIIC.API.Middelware;
 using Persistence;
+using Scrutor;
 
 namespace NIIC.API
 {
@@ -38,11 +45,17 @@ namespace NIIC.API
         public void ConfigureServices(IServiceCollection services)
         {
 
+            #region Mail
+
             services.Configure<SmtpSettings>(Configuration.GetSection("SmtpSettings"));
             services.AddSingleton<IMailer, Mailer>();
 
             services.Configure<MailSettings>(Configuration.GetSection("MailSettings"));
             services.AddTransient<IMailService, MailService>();
+
+            #endregion
+
+            #region Db
 
             //services.AddDbContext<DataContext>(opt =>
             //{
@@ -50,6 +63,8 @@ namespace NIIC.API
             //});
             services.AddDbContext<DataContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("SqlServerConnection")));
+
+            #endregion
 
             Application.ConfigureServices.Localization(services);
 
@@ -67,23 +82,52 @@ namespace NIIC.API
             identityBuilder.AddEntityFrameworkStores<DataContext>();
             identityBuilder.AddSignInManager<SignInManager<AppUser>>();
 
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("super security key"));
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
+            {
+                opt.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    //validate incoming key from token 
+                    ValidateIssuerSigningKey = true,
+                    //current key
+                    IssuerSigningKey = key,
+                    //local host urls
+                    ValidateAudience = false,
+                    ValidateIssuer = false
+                };
+            });
+
+            services.AddScoped<IJwtGenerator, JwtGenerator>();
+
+            services.Scan(scan =>
+            {
+                scan.FromAssemblyOf<NoOp>()
+                    .AddClasses(classes => classes.WithAttribute<CreateSingletonAttribute>(x => x.IsImplementingInterface == false))
+                    .UsingRegistrationStrategy(RegistrationStrategy.Skip).AsSelf().WithSingletonLifetime()
+                    .AddClasses(classes => classes.WithAttribute<CreateInScopeAttribute>(x => x.IsImplementingInterface == false))
+                    .UsingRegistrationStrategy(RegistrationStrategy.Skip).AsSelf().WithScopedLifetime()
+                    .AddClasses(classes => classes.WithAttribute<CreateTransientAttribute>(x => x.IsImplementingInterface == false))
+                    .UsingRegistrationStrategy(RegistrationStrategy.Skip).AsSelf().WithTransientLifetime();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            //custom filter
             app.UseMiddleware<ErrorHandlingMiddleware>();
 
             if (env.IsDevelopment())
             {
                 //app.UseDeveloperExceptionPage();
             }
+            app.UseHttpsRedirection();
 
             app.UseStaticFiles();
 
-            app.UseHttpsRedirection();
-
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
