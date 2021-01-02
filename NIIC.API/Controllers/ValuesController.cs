@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Domains;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NIIC.API.MailKit;
+using NIIC.API.Mail.MailKit;
 using Persistence;
 
 namespace NIIC.API.Controllers

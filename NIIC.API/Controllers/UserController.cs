@@ -16,5 +16,11 @@ namespace NIIC.API.Controllers
         {
             return await Mediator.Send(request);
         }
+
+        //public async Task<ActionResult<Login.Response>> Login(Login.Request request)
+        //{
+        //    return Ok(await Mediator.Send(request));
+        //}
+
     }
 }

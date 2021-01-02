@@ -4,6 +4,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Interfaces;
 using Domains.Identity;
 using FluentValidation;
 using MediatR;
@@ -16,20 +17,21 @@ namespace Application.Users
     {
         public class Request : IRequest<Response>
         {
+            //should create login input
             public string Email { get; set; }
             public string Password { get; set; }
         }
         
         public class Response : ApiResponse
         {
-            public AppUser User { get; set; }
+            public UserDto User { get; set; }
 
             public Response()
             {
                 
             }
 
-            public Response(AppUser user)
+            public Response(UserDto user)
             {
                 User = user;
                 StatusCode = StatusCodes.Status200OK;
@@ -38,6 +40,7 @@ namespace Application.Users
 
         public class RequestValidator :AbstractValidator<Request>
         {
+            // AbstractValidator should take from login input 
             public RequestValidator()
             {
                 RuleFor(x => x.Email).EmailAddress().NotEmpty();
@@ -49,11 +52,13 @@ namespace Application.Users
         {
             private readonly UserManager<AppUser> _manager;
             private readonly SignInManager<AppUser> _signInManager;
+            private readonly IJwtGenerator _jwtGenerator;
 
-            public Handler(UserManager<AppUser>manager, SignInManager<AppUser>signInManager)
+            public Handler(UserManager<AppUser>manager, SignInManager<AppUser>signInManager, IJwtGenerator jwtGenerator)
             {
                 _manager = manager;
                 _signInManager = signInManager;
+                _jwtGenerator = jwtGenerator;
             }
 
             public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
@@ -73,7 +78,13 @@ namespace Application.Users
                 }
 
                 //generate token
-                return new Response(user);
+                return new Response(new UserDto()
+                {
+                    DisplayName = user.DisplayName,
+                    Image = null,
+                    Username = user.UserName,
+                    Token = _jwtGenerator.CreateToken(user)
+                });
             }
         }
 

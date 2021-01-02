@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Application.Activities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,9 +20,9 @@ namespace NIIC.API.Controllers
             return await Mediator.Send(new GetActivitiesList.Request(), cancellation);
         }
 
-       
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<GetActivity.Response> Get(Guid id)
         {
             return await Mediator.Send(new GetActivity.Request{Id = id });

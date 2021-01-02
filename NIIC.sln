@@ -11,9 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domains", "Domains\Domains.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NIIC.API", "NIIC.API\NIIC.API.csproj", "{BC2E8496-66CC-4D8E-858D-15221C4CCB59}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Khalifa.Framework", "Khalifa.Framework\Khalifa.Framework.csproj", "{05CED6C9-AB0D-4ECC-BC3F-B16AF720A353}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{108FB8D3-0029-47B9-81CA-DDA96940BF1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{108FB8D3-0029-47B9-81CA-DDA96940BF1F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,10 +35,6 @@ Global
 		{BC2E8496-66CC-4D8E-858D-15221C4CCB59}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC2E8496-66CC-4D8E-858D-15221C4CCB59}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC2E8496-66CC-4D8E-858D-15221C4CCB59}.Release|Any CPU.Build.0 = Release|Any CPU
-		{05CED6C9-AB0D-4ECC-BC3F-B16AF720A353}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{05CED6C9-AB0D-4ECC-BC3F-B16AF720A353}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{05CED6C9-AB0D-4ECC-BC3F-B16AF720A353}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{05CED6C9-AB0D-4ECC-BC3F-B16AF720A353}.Release|Any CPU.Build.0 = Release|Any CPU
 		{108FB8D3-0029-47B9-81CA-DDA96940BF1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{108FB8D3-0029-47B9-81CA-DDA96940BF1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{108FB8D3-0029-47B9-81CA-DDA96940BF1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
