@@ -21,6 +21,7 @@ namespace Persistence
         {
             base.OnModelCreating(modelBuilder);
 
+            //seed data without repeating
             modelBuilder.Entity<Value>().HasData(
                 new Value() { Id = 1, Name = "khalifa1" },
                 new Value() { Id = 2, Name = "khalifa2" },

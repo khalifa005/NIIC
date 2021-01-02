@@ -15,7 +15,6 @@ namespace Persistence
     {
         public static async Task SeedAsync(DataContext context, ILoggerFactory loggerFactory, UserManager<AppUser> userManager)
         {
-
             try
             {
                 if (!userManager.Users.Any())
