@@ -19,6 +19,7 @@ namespace Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //without this line app will break , gives us the ability when creating migration to set id of identity user as string
             base.OnModelCreating(modelBuilder);
 
             //seed data without repeating
