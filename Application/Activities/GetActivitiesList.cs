@@ -14,6 +14,16 @@ using Persistence;
 
 namespace Application.Activities
 {
+    public class ActivityEvent : AppEvent, INotification
+    {
+
+    }
+
+    [CreateSingleton]
+    public class ActivityCachObject
+    {
+
+    }
     public class GetActivitiesList
     {
         public class Request : IRequest<Response>
@@ -50,12 +60,13 @@ namespace Application.Activities
             {
                 try
                 {
-                    for (var i = 0; i < 10; i++)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        await Task.Delay(2000, cancellationToken);
-                        _log.LogInformation($"task {i} has completed");
-                    }
+                    //cancellation token test with delaying request test on console
+                    //for (var i = 0; i < 10; i++)
+                    //{
+                    //    cancellationToken.ThrowIfCancellationRequested();
+                    //    await Task.Delay(2000, cancellationToken);
+                    //    _log.LogInformation($"task {i} has completed");
+                    //}
 
                     var activities = await _context.Activities.ToListAsync(cancellationToken);
 
@@ -63,7 +74,7 @@ namespace Application.Activities
                 }
                 catch (Exception ex) when (ex is TaskCanceledException)
                 {
-                    _log.LogInformation("task was cancelled");
+                    _log.LogInformation("task was canceled");
                     return ApiResponse.Error<Response>("get activities", ex);
                 }
             }

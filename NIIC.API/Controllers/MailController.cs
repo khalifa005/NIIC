@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Application;
 using Domains.BMail;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -44,7 +45,7 @@ namespace NIIC.API.Controllers
             catch (Exception ex)
             {
 
-                throw;
+                throw new RestException(System.Net.HttpStatusCode.BadRequest,ex);
             }
 
         }

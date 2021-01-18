@@ -13,10 +13,12 @@ using Infrastructure.Security;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +29,7 @@ using NIIC.API.Mail.BMail;
 using NIIC.API.Mail.BMail.MailServices;
 using NIIC.API.Mail.MailKit;
 using NIIC.API.Middelware;
+using NIIC.Application.ApplicationSettings;
 using Persistence;
 using Scrutor;
 
@@ -66,15 +69,22 @@ namespace NIIC.API
 
             #endregion
 
-            Application.ConfigureServices.Localization(services);
+            //Application.ConfigureServices.Localization(services);
+            services.Configure<Jwt>(Configuration.GetSection("JWT"));
 
             services.AddMediatR(typeof(GetActivitiesList.Handler).Assembly);
 
-            services.AddControllers()
-                .AddFluentValidation(conf=>
+            services.AddControllers(opt =>
+            {
+                //insure every request require authenticated user 
+                var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+                opt.Filters.Add(new AuthorizeFilter(policy));
+            })
+                .AddFluentValidation(conf =>
                     conf.RegisterValidatorsFromAssemblyContaining<CreateActivity>());
 
             services.TryAddSingleton<ISystemClock, SystemClock>();
+
             var builder = services.AddIdentityCore<AppUser>();
 
             var identityBuilder = new IdentityBuilder(builder.UserType, builder.Services);
@@ -82,7 +92,10 @@ namespace NIIC.API
             identityBuilder.AddEntityFrameworkStores<DataContext>();
             identityBuilder.AddSignInManager<SignInManager<AppUser>>();
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("super security key"));
+            //convert string to bytes array Encoding.UTF8.GetBytes("super security key")
+            //with this key anyone can generate valid token 
+            //var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("super security key"));
+            //define JwtBearerDefaults scheme that we use 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
             {
                 opt.TokenValidationParameters = new TokenValidationParameters()
@@ -90,8 +103,8 @@ namespace NIIC.API
                     //validate incoming key from token 
                     ValidateIssuerSigningKey = true,
                     //current key
-                    IssuerSigningKey = key,
-                    //local host urls
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Key"])),
+                    //local host urls issue url and receiving  url
                     ValidateAudience = false,
                     ValidateIssuer = false
                 };
@@ -127,9 +140,9 @@ namespace NIIC.API
 
             app.UseRouting();
 
-            app.UseAuthentication();
+            app.UseAuthentication(); //check if user exist in the system
 
-            app.UseAuthorization();
+            app.UseAuthorization(); // check for user roles  
 
             app.UseEndpoints(endpoints =>
             {
@@ -142,22 +155,22 @@ namespace NIIC.API
             });
         }
 
-        public static void Localization(IServiceCollection services)
-        {
-            var supportedCultures = new List<CultureInfo>
-            {
-                new CultureInfo("en"),
-                new CultureInfo("ar"),
-            };
+        //public static void Localization(IServiceCollection services)
+        //{
+        //    var supportedCultures = new List<CultureInfo>
+        //    {
+        //        new CultureInfo("en"),
+        //        new CultureInfo("ar"),
+        //    };
 
-            services.Configure<RequestLocalizationOptions>(options =>
-            {
-                options.DefaultRequestCulture = new RequestCulture("en");
-                options.SupportedCultures = supportedCultures;
-                options.SupportedUICultures = supportedCultures;
-                options.RequestCultureProviders.Clear();
-                options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
-            });
-        }
+        //    services.Configure<RequestLocalizationOptions>(options =>
+        //    {
+        //        options.DefaultRequestCulture = new RequestCulture("en");
+        //        options.SupportedCultures = supportedCultures;
+        //        options.SupportedUICultures = supportedCultures;
+        //        options.RequestCultureProviders.Clear();
+        //        options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
+        //    });
+        //}
     }
 }

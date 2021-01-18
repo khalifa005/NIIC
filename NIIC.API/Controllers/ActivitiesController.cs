@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Activities;
+using Domains;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
@@ -19,6 +21,13 @@ namespace NIIC.API.Controllers
         {
             return await Mediator.Send(new GetActivitiesList.Request(), cancellation);
         }
+
+        ////or 
+        //[HttpGet]
+        //public async Task<ActionResult<GetActivitiesList.Response>> GetList(CancellationToken cancellation)
+        //{
+        //    return await Mediator.Send(new GetActivitiesList.Request(), cancellation);
+        //}
 
 
         [HttpGet("{id}")]
