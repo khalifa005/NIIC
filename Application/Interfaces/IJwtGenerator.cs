@@ -13,6 +13,6 @@ namespace Application.Interfaces
     
     public interface IJwtGenerator
     {
-        string CreateToken(AppUser user, IOptions<Jwt> jwt);
+        string CreateToken(AppUser user);
     }
 }

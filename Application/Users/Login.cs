@@ -78,6 +78,7 @@ namespace Application.Users
 
                 if (!result.Succeeded)
                 {
+                    //custom exception middelware 
                     throw new RestException(HttpStatusCode.Unauthorized);
                 }
 
@@ -87,7 +88,7 @@ namespace Application.Users
                     DisplayName = user.DisplayName,
                     Image = null,
                     Username = user.UserName,
-                    Token = _jwtGenerator.CreateToken(user, _jwt)//generate token
+                    Token = _jwtGenerator.CreateToken(user)//generate token
                 };
 
                 return new Response(mapedUser);

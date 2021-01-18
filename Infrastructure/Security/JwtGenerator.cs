@@ -19,8 +19,14 @@ namespace Infrastructure.Security
     
     public class JwtGenerator : IJwtGenerator
     {
+        private readonly IOptions<Jwt> _jwt;
+
+        public JwtGenerator(IOptions<Jwt> jwt)
+        {
+            _jwt = jwt;
+        }
   
-        public string CreateToken(AppUser user, IOptions<Jwt> jwt)
+        public string CreateToken(AppUser user)
         {
             //build token to return it 
             //take list of user claims to return it inside our token -->userName
@@ -35,7 +41,7 @@ namespace Infrastructure.Security
 
            
             //set out key
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Value.Key));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Value.Key));
             
             //select strong algorithm 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
@@ -45,7 +51,7 @@ namespace Infrastructure.Security
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),//pass our claims
-                Expires = DateTime.UtcNow.AddMinutes(jwt.Value.DurationInMinutes), // token expire after
+                Expires = DateTime.UtcNow.AddMinutes(_jwt.Value.DurationInMinutes), // token expire after
                 SigningCredentials = creds //
             };
 

@@ -111,6 +111,7 @@ namespace NIIC.API
             });
 
             services.AddScoped<IJwtGenerator, JwtGenerator>();
+            services.AddScoped<IUserAccessor, UserAccessor>();
 
             services.Scan(scan =>
             {
