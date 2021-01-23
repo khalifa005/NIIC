@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
-namespace Domains
+namespace Application.Activities.Dtos
 {
-    public class Activity
+    public class ActivityDto
     {
         public Guid Id { get; set; }
         public string Title { get; set; }
@@ -14,11 +16,10 @@ namespace Domains
         public string Venue { get; set; }
         public DateTime Date { get; set; }
 
-        public List<UserActivity> UserActivities { get; set; }
+        [JsonProperty("Attendees")]
+        //to tell automapper how to map it and in the
+       //response property name will change
+        public List<AttendeeDto> UserActivities { get; set; }
 
-        public Activity()
-        {
-            UserActivities = new List<UserActivity>();
-        }
     }
 }

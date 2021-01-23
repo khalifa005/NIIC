@@ -4,12 +4,13 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Activities;
+using Application.ApplicationSettings;
 using Domains;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
-
+using SD.LLBLGen.Pro.LinqSupportClasses.ExpressionClasses;
 
 namespace NIIC.API.Controllers
 {
@@ -31,7 +32,7 @@ namespace NIIC.API.Controllers
 
 
         [HttpGet("{id}")]
-        [Authorize]
+        [Authorize] //only loged in user can see this if not return 401 unauthorized
         public async Task<GetActivity.Response> Get(Guid id)
         {
             return await Mediator.Send(new GetActivity.Request{Id = id });
@@ -45,16 +46,36 @@ namespace NIIC.API.Controllers
 
         
         [HttpPut("{id}")]
+        //[Authorize (Roles = "admin")] //only admin user can see this
+        [Authorize (Policy = Policies.IsActivityHost)]
+        //only loged in with IsActivityHostuser
+        //policy can see this if not return 403 forbidden
         public async Task<EditActivity.Response> Put(Guid id, EditActivity.Request activity)
         {
             activity.Id = id;
             return await Mediator.Send(activity);
         }
 
+
         [HttpDelete("{id}")]
+        [Authorize(Policy = Policies.IsActivityHost)]
         public async Task<DeleteActivity.Response> Delete(Guid id)
         {
             return await Mediator.Send(new DeleteActivity.Request { Id = id });
+        }
+
+        [HttpPost("{id}/attend")]
+        public async Task <CreateAttend.Response> Attend(Guid id)
+        {
+            //{id}/attend is convention based so params need to be the same as it Guid id 
+            return await Mediator.Send(new CreateAttend.Request{ ActivityId = id});
+        }
+
+        [HttpDelete("{id}/attend")]
+        public async Task<DeleteAttend.Response> DeleteAttend(Guid id)
+        {
+            //{id}/attend is convention based so params need to be the same as it Guid id 
+            return await Mediator.Send(new DeleteAttend.Request { Id = id });
         }
     }
 }

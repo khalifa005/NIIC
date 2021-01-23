@@ -17,10 +17,27 @@ namespace Persistence
         public DbSet<Value> Values { get; set; }
         public DbSet<Activity> Activities { get; set; }
 
+        public DbSet<UserActivity> UserActivities { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //without this line app will break , gives us the ability when creating migration to set id of identity user as string
             base.OnModelCreating(modelBuilder);
+
+
+            //define composite key
+            modelBuilder.Entity<UserActivity>().HasKey(ua => new {ua.AppUserId, ua.ActivityId });
+            
+            
+            modelBuilder.Entity<UserActivity>()
+                .HasOne(a => a.AppUser)
+                .WithMany(u => u.UserActivities)
+                .HasForeignKey(a=> a.AppUserId);
+
+            modelBuilder.Entity<UserActivity>()
+                .HasOne(a=> a.Activity)
+                .WithMany(ua=> ua.UserActivities)
+                .HasForeignKey(a => a.ActivityId);
+
 
             //seed data without repeating
             modelBuilder.Entity<Value>().HasData(

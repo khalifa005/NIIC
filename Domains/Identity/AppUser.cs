@@ -8,5 +8,13 @@ namespace Domains.Identity
     public class AppUser : IdentityUser
     {
         public string DisplayName { get; set; }
+
+        public List<UserActivity> UserActivities { get; set; }
+
+        public AppUser()
+        {
+            UserActivities = new List<UserActivity>();
+        }
+
     }
 }

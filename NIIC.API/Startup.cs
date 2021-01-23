@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Application;
 using Application.Activities;
+using Application.ApplicationSettings;
 using Application.Interfaces;
+using AutoMapper;
 using Domains.Identity;
 using FluentValidation.AspNetCore;
 using Infrastructure.Security;
@@ -25,6 +28,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Serialization;
 using NIIC.API.Mail.BMail;
 using NIIC.API.Mail.BMail.MailServices;
 using NIIC.API.Mail.MailKit;
@@ -73,12 +77,20 @@ namespace NIIC.API
             services.Configure<Jwt>(Configuration.GetSection("JWT"));
 
             services.AddMediatR(typeof(GetActivitiesList.Handler).Assembly);
+            services.AddAutoMapper(typeof(GetActivitiesList.Handler));
 
             services.AddControllers(opt =>
             {
                 //insure every request require authenticated user 
                 var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
                 opt.Filters.Add(new AuthorizeFilter(policy));
+            }).AddNewtonsoftJson(options =>
+            {
+                // Use the default property (Pascal) casing
+                options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+
+                // Configure a custom converter
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
             })
                 .AddFluentValidation(conf =>
                     conf.RegisterValidatorsFromAssemblyContaining<CreateActivity>());
@@ -110,6 +122,17 @@ namespace NIIC.API
                 };
             });
 
+            services.AddAuthorization(opt=>
+            {
+                opt.AddPolicy(Policies.IsActivityHost, policy =>
+                {
+                    policy.Requirements.Add(new IsHostRequirement());
+                });
+            });
+
+            //available during the operation life time
+            services.AddTransient<IAuthorizationHandler, IsHostRequirementHandler>();
+            //available during the request life time
             services.AddScoped<IJwtGenerator, JwtGenerator>();
             services.AddScoped<IUserAccessor, UserAccessor>();
 
@@ -122,7 +145,7 @@ namespace NIIC.API
                     .UsingRegistrationStrategy(RegistrationStrategy.Skip).AsSelf().WithScopedLifetime()
                     .AddClasses(classes => classes.WithAttribute<CreateTransientAttribute>(x => x.IsImplementingInterface == false))
                     .UsingRegistrationStrategy(RegistrationStrategy.Skip).AsSelf().WithTransientLifetime();
-            });
+            });//automatic dp injection [singleton]
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
