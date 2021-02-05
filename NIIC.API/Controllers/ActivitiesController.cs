@@ -48,7 +48,7 @@ namespace NIIC.API.Controllers
         [HttpPut("{id}")]
         //[Authorize (Roles = "admin")] //only admin user can see this
         [Authorize (Policy = Policies.IsActivityHost)]
-        //only loged in with IsActivityHostuser
+        //only loged in with IsActivityHostUser
         //policy can see this if not return 403 forbidden
         public async Task<EditActivity.Response> Put(Guid id, EditActivity.Request activity)
         {

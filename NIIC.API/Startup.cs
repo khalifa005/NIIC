@@ -12,6 +12,7 @@ using Application.Interfaces;
 using AutoMapper;
 using Domains.Identity;
 using FluentValidation.AspNetCore;
+using Infrastructure.Photo;
 using Infrastructure.Security;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
@@ -51,17 +52,6 @@ namespace NIIC.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
-            #region Mail
-
-            services.Configure<SmtpSettings>(Configuration.GetSection("SmtpSettings"));
-            services.AddSingleton<IMailer, Mailer>();
-
-            services.Configure<MailSettings>(Configuration.GetSection("MailSettings"));
-            services.AddTransient<IMailService, MailService>();
-
-            #endregion
-
             #region Db
 
             //services.AddDbContext<DataContext>(opt =>
@@ -72,9 +62,6 @@ namespace NIIC.API
                 options.UseSqlServer(Configuration.GetConnectionString("SqlServerConnection")));
 
             #endregion
-
-            //Application.ConfigureServices.Localization(services);
-            services.Configure<Jwt>(Configuration.GetSection("JWT"));
 
             services.AddMediatR(typeof(GetActivitiesList.Handler).Assembly);
             services.AddAutoMapper(typeof(GetActivitiesList.Handler));
@@ -130,12 +117,26 @@ namespace NIIC.API
                 });
             });
 
-            //available during the operation life time
+            //to read data from appSetting using i option<>
+            services.Configure<MailSettings>(Configuration.GetSection("MailSettings"));
+            services.Configure<SmtpSettings>(Configuration.GetSection("SmtpSettings"));
+            
+            services.AddSingleton<IMailer, Mailer>();
+
+            services.AddTransient<IMailService, MailService>();
+
+            //available during the operation life time //for policy
             services.AddTransient<IAuthorizationHandler, IsHostRequirementHandler>();
             //available during the request life time
             services.AddScoped<IJwtGenerator, JwtGenerator>();
             services.AddScoped<IUserAccessor, UserAccessor>();
+            services.AddScoped<IPhotoAccessor, PhotoAccessor>();
 
+            //Application.ConfigureServices.Localization(services);
+
+            services.Configure<Jwt>(Configuration.GetSection("JWT"));
+            services.Configure<CloudinarySetting>(Configuration.GetSection("CLOUDINARY"));
+            //automatic registration
             services.Scan(scan =>
             {
                 scan.FromAssemblyOf<NoOp>()

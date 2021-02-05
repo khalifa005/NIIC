@@ -7,5 +7,6 @@ namespace Application.Interfaces
     public interface IUserAccessor
     {
         string GetCurrentLogedinUsername();
+        string GetCurrentLogedinUserId();
     }
 }

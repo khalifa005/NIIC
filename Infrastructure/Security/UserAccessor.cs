@@ -24,5 +24,14 @@ namespace Infrastructure.Security
 
             return username;
         }
+
+        public string GetCurrentLogedinUserId()
+        {
+            //User? to make it optional sometimes we wouldn't have user
+            var id = _httpContextAccessor.HttpContext.User?.Claims
+                .FirstOrDefault(x => x.Type == "uid")?.Value;
+
+            return id;
+        }
     }
 }

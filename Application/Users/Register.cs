@@ -90,7 +90,7 @@ namespace Application.Users
                     DisplayName = userEntity.DisplayName,
                     Username = userEntity.UserName,
                     Token = _jwtGenerator.CreateToken(userEntity),
-                    Image = null
+                    Image = userEntity.Photos.FirstOrDefault(x => x.IsMain == true)?.Url
                 };
                 return new Response(userDto);
 

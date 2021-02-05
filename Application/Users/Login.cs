@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -86,7 +87,7 @@ namespace Application.Users
                 var mapedUser = new UserDto()
                 {
                     DisplayName = user.DisplayName,
-                    Image = null,
+                    Image = user.Photos.FirstOrDefault(x => x.IsMain == true)?.Url,
                     Username = user.UserName,
                     Token = _jwtGenerator.CreateToken(user)//generate token
                 };

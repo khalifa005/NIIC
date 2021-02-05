@@ -33,7 +33,8 @@ namespace Infrastructure.Security
             //store token in local storage 
             var claims = new List<Claim>()
             {
-                new Claim(JwtRegisteredClaimNames.NameId, user.UserName)
+                new Claim(JwtRegisteredClaimNames.NameId, user.UserName),
+                new Claim("uid", user.Id)
             };
 
             // generate signing credentials
