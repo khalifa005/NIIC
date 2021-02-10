@@ -63,6 +63,7 @@ namespace Application.Activities
                     var activities = await _context.Activities
                         .Include(x=> x.UserActivities)
                         .ThenInclude(x=> x.AppUser)
+                        .ThenInclude(x=> x.Photos)
                         .ToListAsync(cancellationToken);
 
                     //if we want to lazy load related data ,

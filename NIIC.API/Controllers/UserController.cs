@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Application.UserProfile;
 using Application.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -35,6 +36,7 @@ namespace NIIC.API.Controllers
             return await Mediator.Send(new CurrentUser.Request());
         }
 
+       
     }
 
 }

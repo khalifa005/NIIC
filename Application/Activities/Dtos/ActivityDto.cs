@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Application.Comments.Dto;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,6 +21,7 @@ namespace Application.Activities.Dtos
         //to tell automapper how to map it and in the
        //response property name will change
         public List<AttendeeDto> UserActivities { get; set; }
+        public List<CommentDto> Comments { get; set; }
 
     }
 }

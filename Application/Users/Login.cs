@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using NIIC.Application.ApplicationSettings;
+using Persistence;
 
 namespace Application.Users
 {
@@ -57,13 +58,16 @@ namespace Application.Users
             private readonly SignInManager<AppUser> _signInManager;
             private readonly IJwtGenerator _jwtGenerator;
             private readonly IOptions<Jwt> _jwt;
+            private readonly DataContext _context;
 
-            public Handler(UserManager<AppUser>manager, SignInManager<AppUser>signInManager, IJwtGenerator jwtGenerator, IOptions<Jwt> jwt)
+            public Handler(UserManager<AppUser>manager, SignInManager<AppUser>signInManager,
+                IJwtGenerator jwtGenerator, IOptions<Jwt> jwt, DataContext context)
             {
                 _manager = manager;
                 _signInManager = signInManager;
                 _jwtGenerator = jwtGenerator;
                 _jwt = jwt;
+                _context = context;
             }
 
             public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
@@ -75,6 +79,9 @@ namespace Application.Users
                     throw new RestException(HttpStatusCode.Unauthorized);
                 }
 
+                await _context.Entry(user).Collection(x => x.Photos).LoadAsync();
+               // context.Entry(student).Reference(s => s.StudentAddress).Load(); // loads StudentAddress
+               // context.Entry(student).Collection(s => s.StudentCourses).Load(); // loads Courses collection 
                 var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
 
                 if (!result.Succeeded)

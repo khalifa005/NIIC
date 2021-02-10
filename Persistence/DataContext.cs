@@ -10,15 +10,16 @@ namespace Persistence
     public class DataContext : IdentityDbContext<AppUser>
     {
         public DataContext(DbContextOptions options)
-        :base(options)
+        : base(options)
         {
-            
+
         }
 
         public DbSet<Value> Values { get; set; }
         public DbSet<Activity> Activities { get; set; }
         public DbSet<UserActivity> UserActivities { get; set; }
         public DbSet<Photo> Photos { get; set; }
+        public DbSet<Comment> Comments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,18 +28,27 @@ namespace Persistence
 
 
             //define composite key
-            modelBuilder.Entity<UserActivity>().HasKey(ua => new {ua.AppUserId, ua.ActivityId });
-            
-            
+            modelBuilder.Entity<UserActivity>().HasKey(ua => new { ua.AppUserId, ua.ActivityId });
+
+
             modelBuilder.Entity<UserActivity>()
                 .HasOne(a => a.AppUser)
                 .WithMany(u => u.UserActivities)
-                .HasForeignKey(a=> a.AppUserId);
+                .HasForeignKey(a => a.AppUserId);
 
             modelBuilder.Entity<UserActivity>()
-                .HasOne(a=> a.Activity)
-                .WithMany(ua=> ua.UserActivities)
+                .HasOne(a => a.Activity)
+                .WithMany(ua => ua.UserActivities)
                 .HasForeignKey(a => a.ActivityId);
+
+            modelBuilder.Entity<Comment>(entity =>
+            {
+                entity
+                .HasMany(c=> c.Replies)
+                .WithOne(p=> p.ParentComment)
+                .HasForeignKey(f=> f.ParentCommentId);
+            });
+               
 
 
             //seed data without repeating

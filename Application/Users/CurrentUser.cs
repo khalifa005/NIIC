@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using NIIC.Application.ApplicationSettings;
+using Persistence;
 
 namespace Application.Users
 {
@@ -45,12 +46,15 @@ namespace Application.Users
             private readonly UserManager<AppUser> _manager;
             private readonly IJwtGenerator _jwtGenerator;
             private readonly IUserAccessor _userAccessor;
+            private readonly DataContext _context;
 
-            public Handler(UserManager<AppUser> manager, IJwtGenerator jwtGenerator, IUserAccessor userAccessor )
+            public Handler(UserManager<AppUser> manager, IJwtGenerator jwtGenerator,
+                IUserAccessor userAccessor, DataContext context)
             {
                 _manager = manager;
                 _jwtGenerator = jwtGenerator;
                 _userAccessor = userAccessor;
+                _context = context;
             }
 
             public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
@@ -61,6 +65,8 @@ namespace Application.Users
                 {
                     throw new RestException(HttpStatusCode.NotFound, new { User = "user in not exist"});
                 }
+
+                await _context.Entry(user).Collection(x => x.Photos).LoadAsync();
 
                 //mapping user entity to user dto
                 var mapedUser = new UserDto()
