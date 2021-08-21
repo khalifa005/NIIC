@@ -9,6 +9,7 @@ using Application;
 using Application.Activities;
 using Application.ApplicationSettings;
 using Application.Interfaces;
+using Application.UserProfile;
 using AutoMapper;
 using Domains.Identity;
 using FluentValidation.AspNetCore;
@@ -107,7 +108,9 @@ namespace NIIC.API
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Key"])),
                     //local host urls issue url and receiving  url
                     ValidateAudience = false,
-                    ValidateIssuer = false
+                    ValidateIssuer = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
                 };
 
                 opt.Events = new JwtBearerEvents
@@ -149,6 +152,7 @@ namespace NIIC.API
             services.AddScoped<IJwtGenerator, JwtGenerator>();
             services.AddScoped<IUserAccessor, UserAccessor>();
             services.AddScoped<IPhotoAccessor, PhotoAccessor>();
+            services.AddScoped<IProfileReader, ProfileReader>();
 
             //Application.ConfigureServices.Localization(services);
 
@@ -171,7 +175,7 @@ namespace NIIC.API
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             //signalR
-            app.UseResponseCompression();
+            //app.UseResponseCompression();
 
             //custom filter
             app.UseMiddleware<ErrorHandlingMiddleware>();
@@ -199,7 +203,7 @@ namespace NIIC.API
                     defaults: new { controller = "Values", action = "Get" });
 
                 endpoints.MapControllers();
-                endpoints.MapHub<ChatHub>("/chathub");
+                //endpoints.MapHub<ChatHub>("/chathub");
             });
         }
 

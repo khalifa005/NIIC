@@ -16,12 +16,29 @@ namespace NIIC.API.Controllers
 {
     public class ActivitiesController : BaseController
     {
-       
+
         [HttpGet]
-        public async Task<GetActivitiesList.Response> Get(CancellationToken cancellation)
+        public async Task<GetActivitiesListPagining.Response> Get(string city ,CancellationToken cancellation)
         {
-            return await Mediator.Send(new GetActivitiesList.Request(), cancellation);
+            //move to separate function
+
+            var filterUI = ActivityFilterUI.Default();
+            //filterUI.City = "london";
+            filterUI.City = city;
+            var filter = filterUI.GetFilter();
+
+            var sorter = ActivitySorter.ByCreateDateDesc();
+
+
+            return await Mediator.Send(new GetActivitiesListPagining.Request(filter, sorter, Page: 1, PageSize: 5), cancellation);
         }
+
+        ////without sorting and filtering
+        //[HttpGet]
+        //public async Task<GetActivitiesList.Response> Get(CancellationToken cancellation)
+        //{
+        //    return await Mediator.Send(new GetActivitiesList.Request(), cancellation);
+        //}
 
         ////or 
         //[HttpGet]

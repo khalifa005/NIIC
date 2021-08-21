@@ -19,7 +19,9 @@ namespace Application.Mapping
             CreateMap<UserActivity, AttendeeDto>()
                 .ForMember(d=> d.DisplayName, o=> o.MapFrom(s=> s.AppUser.DisplayName))
                 .ForMember(d=> d.Username, o=> o.MapFrom(s=> s.AppUser.UserName))
-                .ForMember(d=> d.Image, o=> o.MapFrom(s=> s.AppUser.Photos.FirstOrDefault(x => x.IsMain == true).Url));
+                .ForMember(d=> d.Image, o=> o.MapFrom(s=> s.AppUser.Photos.FirstOrDefault(x => x.IsMain == true).Url))
+                .ForMember(d=> d.Following , o=> o.MapFrom<FollowingResolver>()); 
+            //to resolver if the current loged user is following the owner of this activity we did seperate it with resolver so we can inject data context ..etc
 
             CreateMap<Comment, CommentDto>()
                .ForMember(d => d.Replies, o => o.MapFrom(s => s.Replies))

@@ -20,6 +20,7 @@ namespace Persistence
         public DbSet<UserActivity> UserActivities { get; set; }
         public DbSet<Photo> Photos { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<UserFollowing> Followings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -44,12 +45,28 @@ namespace Persistence
             modelBuilder.Entity<Comment>(entity =>
             {
                 entity
-                .HasMany(c=> c.Replies)
-                .WithOne(p=> p.ParentComment)
-                .HasForeignKey(f=> f.ParentCommentId);
+                .HasMany(c => c.Replies)
+                .WithOne(p => p.ParentComment)
+                .HasForeignKey(f => f.ParentCommentId);
             });
-               
 
+            modelBuilder.Entity<UserFollowing>(x =>
+            {
+                x.HasKey(u=> new { u.ObserverId, u.TargetId });
+
+                x.HasOne(u=> u.Observer)
+                .WithMany(f=> f.Followings)
+                .HasForeignKey(u=> u.ObserverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+                //important to make ef diffrentiate between the relation because both refrecing to the same class 
+                x.HasOne(u=> u.Target)
+                .WithMany(f=> f.Followers)
+                .HasForeignKey(u=> u.TargetId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+                
+            });
 
             //seed data without repeating
             modelBuilder.Entity<Value>().HasData(

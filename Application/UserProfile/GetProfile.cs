@@ -44,33 +44,16 @@ namespace Application.UserProfile
 
         public class Handler : IRequestHandler<Request, Response>
         {
-            private readonly DataContext _context;
+            private readonly IProfileReader _profileReader;
 
-            public Handler(DataContext context)
+            public Handler(IProfileReader profileReader)
             {
-                _context = context;
+                _profileReader = profileReader;
             }
 
             public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
             {
-
-                var user = await _context.Users.Include(x=> x.Photos)
-                    .SingleOrDefaultAsync(x => x.UserName == request.Username);
-
-                if(user is null)
-                    new RestException(HttpStatusCode.NoContent,
-                        new { Error = "entity is null" });
-
-                var profile = new ProfileDto
-                {
-                    DisplayName = user.DisplayName,
-                    Bio = user.Bio,
-                    MainImage = user.Photos.FirstOrDefault(x=> x.IsMain == true)?.Url,
-                    Username = user.UserName,
-                    Images = user.Photos
-                };
-
-                return new Response(profile);
+                return new Response(await _profileReader.ReadProfile(request.Username));
             }
         }
     }

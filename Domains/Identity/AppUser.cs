@@ -12,11 +12,15 @@ namespace Domains.Identity
 
         public List<UserActivity> UserActivities { get; set; }
         public List<Photo> Photos { get; set; }
+        public List<UserFollowing> Followings { get; set; }
+        public List<UserFollowing> Followers { get; set; }
 
         public AppUser()
         {
             UserActivities = new List<UserActivity>();
             Photos = new List<Photo>();
+            Followers = new List<UserFollowing>();
+            Followings = new List<UserFollowing>();
         }
 
     }
