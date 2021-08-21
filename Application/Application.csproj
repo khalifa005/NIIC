@@ -1,20 +1,44 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.2" />
     <PackageReference Include="FluentValidation" Version="8.6.2" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="8.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Localization" Version="2.2.0" />
     <PackageReference Include="Utf8Json" Version="1.3.7" />
+
+    <PackageReference Include="MediatR" Version="8.0.1" />
+    <PackageReference Include="Stateless" Version="5.1.2" />
+    <PackageReference Include="Hashids.net" Version="1.3.0" />
+
+    <PackageReference Include="MailKit" Version="2.7.0" />
+    <PackageReference Include="Scriban" Version="2.1.3" />
+    <PackageReference Include="Markdig" Version="0.18.0" />
+
+    <PackageReference Include="SD.LLBLGen.Pro.ORMSupportClasses" Version="5.5.7" />
+    <PackageReference Include="Microsoft.FeatureManagement" Version="2.0.0" />
+    <PackageReference Include="SmartAnalyzers.CSharpExtensions.Annotations" Version="2.5.65" />
+    <PackageReference Include="Npgsql.NetTopologySuite" Version="4.1.3" />
   </ItemGroup>
+
+
 
   <ItemGroup>
     <ProjectReference Include="..\Domains\Domains.csproj" />
     <ProjectReference Include="..\Persistence\Persistence.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Identity">
+      <HintPath>C:\Program Files\dotnet\packs\Microsoft.AspNetCore.App.Ref\3.1.2\ref\netcoreapp3.1\Microsoft.AspNetCore.Identity.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

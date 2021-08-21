@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Net;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Activities.Dtos;
+using Application.Interfaces;
+using AutoMapper;
 using Domains;
-using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Persistence;
+using Activity = Domains.Activity;
 
 namespace Application.Activities
 {
@@ -22,13 +26,13 @@ namespace Application.Activities
 
         public class Response : ApiResponse
         {
-            public List<Activity> Activities { get; set; }
+            public List<ActivityDto> Activities { get; set; }
 
             public Response()
             {
             }
 
-            public Response(List<Activity> activities)
+            public Response(List<ActivityDto> activities)
             {
                 Activities = activities;
                 StatusCode = StatusCodes.Status200OK;
@@ -39,325 +43,203 @@ namespace Application.Activities
         {
             private readonly DataContext _context;
             private readonly ILogger<GetActivitiesList> _log;
+            private readonly IMapper _mapper;
 
-            public Handler(DataContext context, ILogger<GetActivitiesList> log)
+            public Handler(DataContext context, ILogger<GetActivitiesList> log, IMapper mapper)
             {
                 _context = context;
                 _log = log;
+                _mapper = mapper;
             }
 
             public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
             {
                 try
                 {
-                    for (var i = 0; i < 10; i++)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        await Task.Delay(2000, cancellationToken);
-                        _log.LogInformation($"task {i} has completed");
-                    }
+                    //cancellation token test with delaying request test on console
+                    //for (var i = 0; i < 10; i++)
+                    //{
+                    //    cancellationToken.ThrowIfCancellationRequested();
+                    //    await Task.Delay(2000, cancellationToken);
+                    //    _log.LogInformation($"task {i} has completed");
+                    //}
 
-                    var activities = await _context.Activities.ToListAsync(cancellationToken);
+                    var activities = await _context.Activities
+                        .Include(x => x.UserActivities)
+                        .ThenInclude(x => x.AppUser)
+                        .ThenInclude(x => x.Photos)
+                        .ToListAsync(cancellationToken);
 
-                    return new Response(activities);
+                    //if we want to lazy load related data ,
+                    //install ef proxy package and configure it in startup
+                    //add virtual key word before all related data in domain entities 
+                    var activitiesDtoUsingAutoMapper = _mapper.Map<List<Activity>, List<ActivityDto>>(activities);
+                    return new Response(activitiesDtoUsingAutoMapper);
                 }
                 catch (Exception ex) when (ex is TaskCanceledException)
                 {
-                    _log.LogInformation("task was cancelled");
+                    _log.LogInformation("task was canceled");
                     return ApiResponse.Error<Response>("get activities", ex);
                 }
             }
         }
     }
 
-    public class GetActivity
+    public class ActivityFilterUI : FilterUI<ActivityFilter>
     {
-        public class Request : IRequest<Response>
+        public string City { get; set; }
+
+        public override ActivityFilter GetFilter()
         {
-            public Guid Id { get; set; }
+            return new ActivityFilter
+            {
+                City = City
+            };
         }
 
-        public class Response : ApiResponse
+        public override string SerializeJson()
         {
-            public Activity Activity { get; set; }
-
-            public Response()
-            {
-            }
-
-            public Response(Activity activity)
-            {
-                Activity = activity;
-                StatusCode = StatusCodes.Status200OK;
-            }
+            throw new NotImplementedException();
         }
 
-        public class Handler : IRequestHandler<Request, Response>
+        public static ActivityFilterUI Default()
         {
-            private readonly DataContext _context;
-
-            public Handler(DataContext context)
+            return new ActivityFilterUI
             {
-                _context = context;
-            }
-
-            public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
-            {
-                try
-                {
-                    var activity =
-                        await _context.Activities.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
-                    //pass exception to api response generic error method internal error
-                    if (activity == null)
-                        throw new Exception("activity is null");
-
-                    return new Response(activity);
-                }
-                catch (Exception ex)
-                {
-                    return ApiResponse.Error<Response>("get activity", ex);
-                }
-            }
+                City = string.Empty
+            };
         }
     }
 
-    public class CreateActivity
+    public class ActivityFilter : IFilter<Activity>
+    {
+        public string City { get; set; }
+        public IQueryable<Activity> Filter(IQueryable<Activity> query)
+        {
+
+            //if (JobStatusId.HasValue)
+            //    query = query.Where(x => x.StatusId == JobStatusId);
+
+            if (City is { Length: > 2 })
+            {
+                City = City.ToLower();
+
+                query = query.Where(x => x.City.ToLower().Contains(City));
+            }
+
+            return query;
+        }
+
+    }
+
+    public class ActivitySorter : ISort<Activity>
+    {
+        public OrderOperator? ByCreateDate { get; set; }
+
+        public IOrderedQueryable<Activity> Sort(IQueryable<Activity> query)
+        {
+            if (ByCreateDate.HasValue)
+            {
+                // We are sorting by Id because well Id indexes very fast in sorting than date and we know bigger id means created later
+                return ByCreateDate switch
+                {
+                    OrderOperator.Descending => query.OrderByDescending(x => x.Id),
+                    _ => query.OrderBy(x => x.Id)
+                };
+            }
+
+            return query.OrderByDescending(x => x.Id);
+        }
+
+        public static ActivitySorter ByCreateDateAsc() => new() { ByCreateDate = OrderOperator.Ascending };
+
+        public static ActivitySorter ByCreateDateDesc() => new() { ByCreateDate = OrderOperator.Descending };
+    }
+
+    public class GetActivitiesListPagining
     {
         public class Request : IRequest<Response>
         {
-            public Guid Id { get; set; }
-            public string Title { get; set; }
-            public string Description { get; set; }
-            public string Category { get; set; }
-            public DateTime Date { get; set; }
-            public string City { get; set; }
-            public string Venue { get; set; }
+            public readonly ActivityFilter _filter;
+            public readonly ISort<Activity> _sorter;
+            public readonly int _page;
+            public readonly int _pageSize;
+
+            public Request(ActivityFilter filter, ISort<Activity> sorter, int Page, int PageSize)
+            {
+                _filter = filter;
+                _sorter = sorter;
+                _page = Page;
+                _pageSize = PageSize;
+            }
         }
 
         public class Response : ApiResponse
         {
-            public Activity Activity { get; set; }
-
+            public List<ActivityDto> Activities { get; set; }
+            public PagingInfo PagingResult { get; set; }
             public Response()
             {
             }
 
-            public Response(Activity activity)
+            public Response(List<ActivityDto> activities, PagingInfo pagingResult)
             {
-                Activity = activity;
+                Activities = activities;
+                PagingResult = pagingResult;
                 StatusCode = StatusCodes.Status200OK;
-            }
-        }
-
-        public class RequestValidator : AbstractValidator<Request>
-        {
-            public RequestValidator()
-            {
-                RuleFor(x => x.Title).NotEmpty();
-                RuleFor(x => x.Description).NotEmpty();
-                RuleFor(x => x.Category).NotEmpty();
-                RuleFor(x => x.Date).NotEmpty();
-                RuleFor(x => x.City).NotEmpty();
-                RuleFor(x => x.Venue).NotEmpty();
             }
         }
 
         public class Handler : IRequestHandler<Request, Response>
         {
             private readonly DataContext _context;
+            private readonly ILogger<GetActivitiesList> _log;
+            private readonly IMapper _mapper;
 
-            public Handler(DataContext context)
+            public Handler(DataContext context, ILogger<GetActivitiesList> log, IMapper mapper)
             {
                 _context = context;
+                _log = log;
+                _mapper = mapper;
             }
 
             public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
             {
                 try
                 {
-                    var activity = new Activity();
+                 
+                    var pagingQuery = new SortedPagingQueryCondition<Activity>(request._filter, request._sorter, request._page, request._pageSize);
 
-                    activity = new Activity
+                    var queryRelatedData = _context.Activities
+                        .Include(x => x.UserActivities)
+                        .ThenInclude(x => x.AppUser)
+                        .ThenInclude(x => x.Photos)
+                        .AsQueryable();
+
+                    var query = QueryBuilder.Paging(queryRelatedData, pagingQuery);
+                    //without related data//var query = QueryBuilder.Paging(_context.Activities.AsQueryable(), pagingQuery);
+
+                    var countTotalResult = await query.Count.CountAsync();
+                    var activitiesResult = await query.Listing.ToListAsync();
+                    
+                    var activitiesDtoUsingAutoMapper = _mapper.Map<List<Activity>, List<ActivityDto>>(activitiesResult);
+
+                    var pagingInfo = new PagingInfo
                     {
-                        Id = request.Id,
-                        Title = request.Title,
-                        Description = request.Description,
-                        Category = request.Category,
-                        Date = request.Date,
-                        City = request.City,
-                        Venue = request.Venue
+                        CurrentPage = request._page,
+                        PageSize = request._pageSize,
+                        TotalResults = countTotalResult
                     };
 
-                    _context.Activities.Add(activity);
-
-                    var success = await _context.SaveChangesAsync() > 0;
-
-                    if (!success) throw new Exception("can't save activity entity");
-                    //return Unit.Value;
-
-                    return new Response(activity);
+                    return new Response(activitiesDtoUsingAutoMapper, pagingInfo);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is TaskCanceledException)
                 {
-                    return ApiResponse.Error<Response>("error save activity", ex);
+                    _log.LogInformation("task was canceled");
+                    return ApiResponse.Error<Response>("get activities", ex);
                 }
             }
         }
     }
 
-    public class EditActivity
-    {
-        public class Request : IRequest<Response>
-        {
-            public Guid? Id { get; set; }
-            public string Title { get; set; }
-            public string Description { get; set; }
-            public string Category { get; set; }
-            public DateTime Date { get; set; }
-            public string City { get; set; }
-            public string Venue { get; set; }
-        }
-
-        public class RequestValidator : AbstractValidator<Request>
-        {
-            public RequestValidator()
-            {
-                RuleFor(x => x.Title).NotEmpty();
-                RuleFor(x => x.Description).NotEmpty();
-                RuleFor(x => x.Category).NotEmpty();
-                RuleFor(x => x.Date).NotEmpty();
-                RuleFor(x => x.City).NotEmpty();
-                RuleFor(x => x.Venue).NotEmpty();
-            }
-        }
-
-        public class Response : ApiResponse
-        {
-            public Activity Activity { get; set; }
-
-            public Response()
-            {
-            }
-
-            public Response(Activity activity)
-            {
-                Activity = activity;
-                StatusCode = StatusCodes.Status200OK;
-            }
-        }
-
-        public class Handler : IRequestHandler<Request, Response>
-        {
-            private readonly DataContext _context;
-
-            public Handler(DataContext context)
-            {
-                _context = context;
-            }
-
-            public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
-            {
-                var currentActivity = await _context.Activities.FindAsync(request.Id);
-                //return not found null obj and right status code in the api response obj
-                if (currentActivity == null)
-                    throw new RestException(HttpStatusCode.NotFound, new {currentActivity = "Not Found"});
-                currentActivity.Title = request.Title ?? currentActivity.Title;
-                currentActivity.Description = request.Description ?? currentActivity.Description;
-                currentActivity.Category = request.Category ?? currentActivity.Category;
-                currentActivity.Date = request.Date;
-                currentActivity.City = request.City ?? currentActivity.City;
-                currentActivity.Venue = request.Venue ?? currentActivity.Venue;
-
-
-                var success = await _context.SaveChangesAsync() > 0;
-
-                if (!success) throw new Exception("can't edit activity entity");
-
-                return new Response(currentActivity);
-            }
-        }
-    }
-
-    public class DeleteActivity
-    {
-        public class Request : IRequest<Response>
-        {
-            public Guid Id { get; set; }
-        }
-
-        public class Response : ApiResponse
-        {
-            public Activity Activity { get; set; }
-
-            public Response()
-            {
-            }
-
-            public Response(Activity activity)
-            {
-                Activity = activity;
-                StatusCode = StatusCodes.Status200OK;
-            }
-        }
-
-        public class Handler : IRequestHandler<Request, Response>
-        {
-            private readonly DataContext _context;
-
-            public Handler(DataContext context)
-            {
-                _context = context;
-            }
-
-            public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
-            {
-                //return null obj and right status code in the api response obj
-                try
-                {
-                    var currentActivity = await _context.Activities.FindAsync(request.Id);
-
-                    if (currentActivity == null)
-                        return new Response
-                        {
-                            Activity = null,
-                            StatusCode = StatusCodes.Status404NotFound
-                        };
-
-
-                    _context.Remove(currentActivity);
-
-                    var success = await _context.SaveChangesAsync() > 0;
-
-                    if (!success) throw new Exception("can't delete activity entity");
-
-                    return new Response(currentActivity);
-                }
-                catch (Exception ex)
-                {
-                    return ApiResponse.Error<Response>("error delete activity", ex);
-                }
-            }
-        }
-    }
-
-    //[CreateSingleton]
-    //public class ActivitiesCache : CacheObject
-    //{
-    //    public override string Key(string activityCateg = "") => $"Activity.{activityCateg}";
-
-    //    public ActivitiesCache(IDistributedCache cache) : base(cache)
-    //    {
-    //    }
-
-    //    public Task<List<Activity>> GetActivitiesAsync(short activityCateg, CancellationToken cancellationToken)
-    //    {
-    //        return GetAsync((Key(activityCateg.ToString()), AbsoluteOneDay), () =>
-    //            SK.Data.ORM.Query.GetAsync(meta => meta.Neighbourhood.Where(x => x.CityId == activityCateg).ProjectToNeighbourhoodView().ToListAsync(cancellationToken)));
-    //    }
-    //}
-    //[AttributeUsage(AttributeTargets.Class)]
-    //public class CreateSingletonAttribute : Attribute
-    //{
-    //    public bool IsImplementingInterface { get; set; } = false;
-    //}
 }

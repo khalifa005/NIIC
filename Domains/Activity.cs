@@ -13,5 +13,14 @@ namespace Domains
         public string City { get; set; }
         public string Venue { get; set; }
         public DateTime Date { get; set; }
+
+        public List<UserActivity> UserActivities { get; set; }
+        public List<Comment> Comments { get; set; }
+
+        public Activity()
+        {
+            UserActivities = new List<UserActivity>();
+            Comments = new List<Comment>();
+        }
     }
 }
